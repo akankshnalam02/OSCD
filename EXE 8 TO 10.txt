@@ -1,0 +1,310 @@
+EXE 8
+
+ 
+#include <stdbool.h> 
+#include <stdio.h> 
+#include <string.h> 
+#include <stdlib.h> 
+#include <ctype.h> 
+ 
+char delimiters[] = "+-*/,><= "; 
+char operators[] = "+-*/><="; 
+char *keywords[] = { "if", "else", "while", "do", "break", "continue", "int", "double", "float", 
+"return", "char", "case", "sizeof", "long", "short", "typedef", "switch", "unsigned", "void", "static", 
+"struct", "goto" }; 
+ 
+bool isDelimiter(char ch) { 
+    for (int i = 0; i < sizeof(delimiters) - 1; i++) { 
+        if (ch == delimiters[i]) { 
+            return true; 
+        } 
+    } 
+    return false; 
+} 
+ 
+bool isOperator(char ch) { 
+    for (int i = 0; i < sizeof(operators) - 1; i++) { 
+        if (ch == operators[i]) { 
+            return true; 
+        } 
+    } 
+    return false; 
+} 
+ 
+bool validIdentifier(char* str) { 
+    if (str[0] == '\0' || isDelimiter(str[0]) || 
+        (str[0] >= '0' && str[0] <= '9')) { 
+        return false; 
+    } 
+    return true; 
+} 
+ 
+bool isKeyword(char *str) { 
+    for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) { 
+        if (strcmp(str, keywords[i]) == 0) { 
+            return true; 
+        } 
+    } 
+    return false; 
+} 
+ 
+bool isInteger(char *str) { 
+    if (strlen(str) == 0) return false; 
+    for (int i = 0; i < strlen(str); i++) { 
+        if (!isdigit(str[i])) { 
+            return false; 
+        } 
+    } 
+    return true; 
+} 
+ 
+bool isRealNumber(char *str) { 
+    int i, len = strlen(str); 
+    bool hasDecimal = false; 
+ 
+    if (len == 0) return false; 
+ 
+    for (i = 0; i < len; i++) { 
+        if (!isdigit(str[i]) && str[i] != '.' && (i > 0)) { 
+            return false; 
+        } 
+        if (str[i] == '.') { 
+            if (hasDecimal) { 
+                return false; 
+            } 
+            hasDecimal = true; 
+        } 
+    } 
+    return true; 
+} 
+ 
+char* subString(char *str, int left, int right) { 
+    char *subStr = (char *)malloc(sizeof(char) * (right - left + 1)); 
+    if (subStr == NULL) { 
+        perror("Unable to allocate memory for substring"); 
+        exit(EXIT_FAILURE); 
+    } 
+  
+    strncpy(subStr, str + left, right - left); 
+    subStr[right - left] = '\0'; 
+    return subStr; 
+} 
+ 
+void parse(char *str) { 
+    int left = 0, right = 0; 
+    int len = strlen(str); 
+ 
+    while (right < len) { 
+    
+        printf("In parse while str[r=%d]=%c\n", right, str[right]); 
+ 
+        if (!isDelimiter(str[right])) { 
+            right++; 
+        } else { 
+          
+            if (left < right) { 
+                char *subStr = subString(str, left, right); 
+                printf("In substring fun '%s'", subStr); 
+                if (isKeyword(subStr)) { 
+                    printf(" IS A KEYWORD\n", subStr); 
+                } else if (isInteger(subStr)) { 
+                    printf(" IS AN INTEGER\n", subStr); 
+                } else if (isRealNumber(subStr)) { 
+                    printf(" IS A REAL NUMBER\n", subStr); 
+                } else if (validIdentifier(subStr)) { 
+                    printf(" IS A VALID IDENTIFIER\n", subStr); 
+                } else { 
+                    printf(" IS NOT A VALID IDENTIFIER\n", subStr); 
+                } 
+                free(subStr); 
+            } 
+ 
+            
+            printf("In parse while str[r=%d]=%c (delimiter)\n", right, str[right]); 
+ 
+            if (isOperator(str[right])) { 
+                printf("%c IS AN OPERATOR\n", str[right]); 
+            } 
+            left = right + 1; 
+            right = left; 
+        } 
+    } 
+ 
+  
+    if (left < right) { 
+        char *subStr = subString(str, left, right); 
+        printf("In substring fun '%s'", subStr); 
+        if (isKeyword(subStr)) { 
+            printf(" IS A KEYWORD\n", subStr); 
+        } else if (isInteger(subStr)) { 
+            printf(" IS AN INTEGER\n", subStr); 
+        } else if (isRealNumber(subStr)) { 
+            printf(" IS A REAL NUMBER\n", subStr); 
+        } else if (validIdentifier(subStr)) { 
+            printf(" IS A VALID IDENTIFIER\n", subStr); 
+        } else { 
+            printf(" IS NOT A VALID IDENTIFIER\n", subStr); 
+        } 
+        free(subStr); 
+    } 
+} 
+ 
+int main() { 
+    char str[100]; 
+ 
+    
+    printf("Enter a string to parse: "); 
+    fgets(str, sizeof(str), stdin); 
+    
+    
+    str[strcspn(str, "\n")] = 0; 
+ 
+    parse(str); 
+    return 0; 
+} 
+
+OUTPUT:
+Enter a string to parse: X=a+1.5,b=2.0
+In parse while str[r=0]=X
+In parse while str[r=1]==
+In substring fun 'X' IS A REAL NUMBER
+In parse while str[r=1]== (delimiter)
+= IS AN OPERATOR
+In parse while str[r=2]=a
+In parse while str[r=3]=+
+In substring fun 'a' IS A REAL NUMBER
+In parse while str[r=3]=+ (delimiter)
++ IS AN OPERATOR
+In parse while str[r=4]=1
+In parse while str[r=5]=.
+In parse while str[r=6]=5
+In parse while str[r=7]=,
+In substring fun '1.5' IS A REAL NUMBER
+In parse while str[r=7]=, (delimiter)
+In parse while str[r=8]=b
+In parse while str[r=9]==
+In substring fun 'b' IS A REAL NUMBER
+In parse while str[r=9]== (delimiter)
+= IS AN OPERATOR
+In parse while str[r=10]=2
+In parse while str[r=11]=.
+In parse while str[r=12]=0
+In substring fun '2.0' IS A REAL NUMBER
+
+
+EXE 9
+
+%{ 
+#include <stdio.h> 
+#include <string.h> 
+int i = 0; 
+%} 
+%% 
+[a-zA-Z0-9]+ { i++; } 
+\n { printf("%d\n", i); i = 0; } 
+. { /* Ignore other characters */ } 
+%% 
+int yywrap(void) { 
+return 1; 
+} 
+int main() { 
+yylex(); 
+return 0; 
+}
+
+OUTPUT:
+Navya Sree 
+2
+
+
+EXE 10
+
+#include <stdio.h> 
+#include <stdlib.h> 
+#include<string.h> 
+#include <stdbool.h> 
+#define MAX 100 
+// Stack structure 
+typedef struct { 
+char items[MAX]; 
+int top; 
+} Stack; 
+// Function to initialize the stack 
+void initStack(Stack *s) { 
+s->top = -1; 
+} 
+// Function to check if the stack is empty 
+bool isEmpty(Stack *s) { 
+return s->top == -1; 
+} 
+// Function to push an element onto the stack 
+void push(Stack *s, char c) { 
+if (s->top < MAX - 1) { 
+s->items[++(s->top)] = c; 
+} else { 
+printf("Stack overflow\n"); 
+exit(1); 
+} 
+} 
+// Function to pop an element from the stack 
+char pop(Stack *s) { 
+if (isEmpty(s)) { 
+printf("Stack underflow\n"); 
+exit(1); 
+} 
+return s->items[(s->top)--]; 
+} 
+// Function to check the top element of the stack 
+char peek(Stack *s) { 
+if (isEmpty(s)) { 
+return '\0'; // Return a null character if stack is empty 
+} 
+return s->items[s->top]; 
+} 
+// Function to check if the parentheses are balanced 
+bool areBalanced(char *expression) { 
+Stack stack; 
+initStack(&stack); 
+int i; 
+for (i = 0; expression[i] != '\0'; i++) { 
+char c = expression[i]; 
+// Push opening parentheses onto the stack 
+if (c == '(' || c == '{' || c == '[') { 
+push(&stack, c); 
+} 
+// Check closing parentheses 
+else if (c == ')' || c == '}' || c == ']') { 
+if (isEmpty(&stack)) { 
+return false; // No matching opening parenthesis 
+} 
+char top = pop(&stack); 
+if ((c == ')' && top != '(') || 
+(c == '}' && top != '{') || 
+(c == ']' && top != '[')) { 
+return false; // Mismatched parentheses 
+} 
+} 
+} 
+// If stack is empty, parentheses are balanced 
+return isEmpty(&stack); 
+} 
+int main() { 
+char expression[MAX]; 
+printf("Enter an expression: "); 
+fgets(expression, sizeof(expression), stdin); 
+// Remove newline character if present 
+size_t length = strlen(expression); 
+if (length > 0 && expression[length - 1] == '\n') { 
+expression[length - 1] = '\0'; 
+} 
+if (areBalanced(expression)) { 
+printf("The expression has balanced parentheses.\n"); 
+} else { 
+printf("The expression does not have balanced parentheses.\n"); 
+} 
+return 0; 
+}
+
+OUTPUT:
+Enter an expression: aib[a*b]+(a*c){b+c}
+The expression has balanced parentheses.

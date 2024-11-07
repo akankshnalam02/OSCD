@@ -1,0 +1,269 @@
+FIFO
+
+#include <stdio.h> 
+ 
+int main() { 
+    int i, j, l, rs[50], frame[10], nf, k, avail, count = 0; 
+ 
+    printf("Enter the length of reference string: "); 
+    scanf("%d", &l); 
+ 
+    printf("Enter the reference string: "); 
+    for (i = 1; i <= l; i++) 
+        scanf("%d", &rs[i]); 
+ 
+    printf("Enter the number of frames: "); 
+    scanf("%d", &nf); 
+ 
+    for (i = 0; i < nf; i++) 
+        frame[i] = -1; 
+ 
+    j = 0; 
+    printf("Reference string\tPage frames\n"); 
+    for (i = 1; i <= l; i++) { 
+        printf("\n%4d\t", rs[i]); 
+        avail = 0; 
+ 
+        for (k = 0; k < nf; k++) 
+            if (frame[k] == rs[i]) 
+                avail = 1; 
+ 
+        if (avail == 0) { 
+            frame[j] = rs[i]; 
+            j = (j + 1) % nf;   
+            count++; 
+ 
+            for (k = 0; k < nf; k++) 
+                printf("%4d", frame[k]); 
+        } 
+    } 
+    printf("\n\nTotal number of page faults: %d\n", count); 
+ 
+    printf("Press Enter to exit..."); 
+    getchar(); 
+    getchar(); 
+ 
+    return 0; 
+}
+
+OUTPUT:
+Enter the length of reference string: 3
+Enter the reference string: 3
+4
+5
+Enter the number of frames: 2
+Reference string	Page frames
+
+   3	   3  -1
+   4	   3   4
+   5	   5   4
+
+Total number of page faults: 3
+
+LFU
+
+#include <stdio.h> 
+ 
+int main() { 
+    int q[20], p[50], c = 0, c1, d, f, i, j, k = 0, n, r, t, b[20], c2[20]; 
+ 
+    printf("Enter the number of pages: "); 
+    scanf("%d", &n); 
+ 
+    printf("Enter the reference string: "); 
+    for (i = 0; i < n; i++) 
+        scanf("%d", &p[i]); 
+ 
+    printf("Enter the number of frames: "); 
+    scanf("%d", &f); 
+ 
+    q[k] = p[k]; 
+    printf("\n\t%d\n", q[k]); 
+    c++; 
+    k++; 
+ 
+    for (i = 1; i < n; i++) { 
+        c1 = 0; 
+        for (j = 0; j < f; j++) { 
+            if (p[i] != q[j]) 
+                c1++; 
+        } 
+        if (c1 == f) { 
+            c++; 
+ 
+            if (k < f) { 
+                q[k] = p[i]; 
+                k++; 
+                for (j = 0; j < k; j++) 
+                    printf("\t%d", q[j]); 
+                printf("\n"); 
+            } else { 
+                for (r = 0; r < f; r++) { 
+                    c2[r] = 0; 
+                    for (j = i - 1; j >= 0; j--) { 
+                        if (q[r] != p[j]) { 
+                            c2[r]++; 
+                        } else { 
+                            break; 
+                        } 
+                    } 
+                } 
+                for (r = 0; r < f; r++) 
+                    b[r] = c2[r]; 
+                for (r = 0; r < f; r++) { 
+                    for (j = r; j < f; j++) { 
+                        if (b[r] < b[j]) { 
+                            t = b[r]; 
+                            b[r] = b[j]; 
+                            b[j] = t; 
+                        } 
+                    } 
+                } 
+                for (r = 0; r < f; r++) { 
+                    if (c2[r] == b[0]) 
+                        q[r] = p[i]; 
+                    printf("\t%d", q[r]); 
+                } 
+                printf("\n"); 
+            } 
+        } 
+    } 
+ 
+    printf("\nThe number of page faults is %d\n", c); 
+ 
+    printf("Press Enter to exit..."); 
+    getchar(); 
+    getchar(); 
+ 
+    return 0;
+}
+
+OUTPUT:
+Enter the number of pages: 7
+Enter the reference string: 7
+0
+9
+0
+3
+7
+2
+Enter the number of frames: 4
+
+	7
+	7	9
+	7	9	3
+	7	9	3	2
+
+The number of page faults is 4
+
+LFU
+
+#include <stdio.h> 
+ 
+int n, page[20], f, fr[20], i; 
+ 
+void display() { 
+    for (i = 0; i < f; i++) { 
+        printf("%d ", fr[i]); 
+    } 
+    printf("\n"); 
+} 
+ 
+void request() { 
+    printf("Enter number of pages: "); 
+    scanf("%d", &n); 
+    printf("Enter number of frames: "); 
+    scanf("%d", &f); 
+    printf("Enter page numbers: "); 
+    for (i = 0; i < n; i++) { 
+        scanf("%d", &page[i]); 
+    } 
+    for (i = 0; i < f; i++) { 
+        fr[i] = -1; 
+    } 
+} 
+ 
+void replace() { 
+    int j, flag = 0, pf = 0; 
+    int max, lp[10], index, m; 
+ 
+ 
+    for (j = 0; j < f; j++) { 
+        fr[j] = page[j]; 
+        flag = 1; 
+        pf++; 
+        display(); 
+    } 
+    
+    for (j = f; j < n; j++) { 
+        flag = 0; 
+        
+        for (i = 0; i < f; i++) { 
+            if (fr[i] == page[j]) { 
+                flag = 1; 
+                break; 
+            } 
+        } 
+ 
+        if (flag == 0) { 
+            for (i = 0; i < f; i++) { 
+                lp[i] = 0; 
+            } 
+ 
+            for (i = 0; i < f; i++) { 
+                for (m = j + 1; m < n; m++) { 
+                    if (fr[i] == page[m]) { 
+                        lp[i] = m - j; 
+                        break; 
+                    } 
+                } 
+            } 
+ 
+            max = lp[0]; 
+            index = 0; 
+            for (i = 0; i < f; i++) { 
+                if (lp[i] == 0) { 
+                    index = i; 
+                    break; 
+                } else if (max < lp[i]) { 
+                    max = lp[i]; 
+                    index = i; 
+                } 
+            } 
+ 
+            fr[index] = page[j]; 
+            pf++; 
+            display(); 
+        } 
+    } 
+ 
+    printf("Page faults: %d\n", pf); 
+} 
+ 
+int main() { 
+    request(); 
+    replace(); 
+ 
+    printf("Press Enter to exit..."); 
+    getchar(); 
+    getchar(); 
+ 
+    return 0; 
+}
+
+OUTPUT:
+Enter number of pages: 6
+Enter number of frames: 4
+Enter page numbers: 6
+7
+8
+9
+2
+1
+6 -1 -1 -1 
+6 7 -1 -1 
+6 7 8 -1 
+6 7 8 9 
+2 7 8 9 
+1 7 8 9 
+Page faults: 6

@@ -1,0 +1,546 @@
+EXE 11
+#include<stdio.h> 
+#include<stdlib.h> 
+#include<string.h> 
+//Global Variables 
+int z = 0, i = 0, j = 0, c = 0; 
+char a[16], ac[20], stk[15], act[10]; 
+void check() 
+{ 
+// Copying string to be printed as action 
+strcpy(ac,"REDUCE TO E -> "); 
+// c=length of input string 
+for(z = 0; z < c; z++) 
+{ 
+//checking for producing rule E->4 
+if(stk[z] == '4') 
+{ 
+printf("%s4", ac); 
+stk[z] = 'E'; 
+stk[z + 1] = '\0'; 
+//printing action 
+printf("\n$%s\t%s$\t", stk, a); 
+} 
+} 
+for(z = 0; z < c - 2; z++) 
+{ 
+//checking for another production 
+if(stk[z] == '2' && stk[z + 1] == 'E' && 
+stk[z + 2] == '2') 
+{ 
+printf("%s2E2", ac); 
+stk[z] = 'E'; 
+stk[z + 1] = '\0'; 
+stk[z + 2] = '\0'; 
+printf("\n$%s\t%s$\t", stk, a); 
+i = i - 2; 
+} 
+} 
+for(z=0; z<c-2; z++) 
+{ 
+//checking for E->3E3 
+if(stk[z] == '3' && stk[z + 1] == 'E' && 
+stk[z + 2] == '3') 
+{ 
+printf("%s3E3", ac); 
+stk[z]='E'; 
+stk[z + 1]='\0'; 
+stk[z + 1]='\0'; 
+printf("\n$%s\t%s$\t", stk, a); 
+i = i - 2; 
+} 
+} 
+return ; //return to main 
+} 
+//Driver Function 
+int main() 
+{ 
+printf("GRAMMAR is -\nE->2E2 \nE->3E3 \nE->4\n"); 
+strcpy(a,"32423"); 
+c=strlen(a); 
+strcpy(act,"SHIFT"); 
+printf("\nstack \t input \t action"); 
+printf("\n$\t%s$\t", a); 
+for(i = 0; j < c; i++, j++) 
+{ 
+// Printing action 
+printf("%s", act); 
+// Pushing into stack 
+stk[i] = a[j]; 
+stk[i + 1] = '\0'; 
+a[j]=' '; 
+printf("\n$%s\t%s$\t", stk, a); 
+check(); 
+} 
+check(); 
+if(stk[0] == 'E' && stk[1] == '\0') 
+printf("Accept\n"); 
+else //else reject 
+printf("Reject\n"); 
+} 
+OUTPUT:
+
+GRAMMAR is -
+E->2E2 
+E->3E3 
+E->4
+
+stack 	 input 	 action
+$	32423$	SHIFT
+$3	 2423$	SHIFT
+$32	  423$	SHIFT
+$324	   23$	REDUCE TO E -> 4
+$32E	   23$	SHIFT
+$32E2	    3$	REDUCE TO E -> 2E2
+$3E	    3$	SHIFT
+$3E3	     $	REDUCE TO E -> 3E3
+$E	     $	Accept
+
+
+EXE 12
+#include <stdio.h>
+#include <string.h>
+
+int E(), Edash(), T(), Tdash(), F();
+char *ip; 
+char string[50];
+
+int main() {
+    printf("Enter the string: ");
+    scanf("%s", string);
+    ip = string;
+    printf("\n\nInput\tAction\n--------------------------------\n");
+    
+    // Corrected the end-of-string check
+    if (E() && *ip == '\0') {
+        printf("\n--------------------------------\n");
+        printf("String is successfully parsed\n");
+    } else {
+        printf("\n--------------------------------\n");
+        printf("Error in parsing string\n");
+    }
+    return 0;
+}
+
+int E() {
+    printf("%s\tE -> T E'\n", ip);
+    if (T()) {
+        if (Edash()) {
+            return 1;
+        } else
+            return 0;
+    } else
+        return 0;
+}
+
+int Edash() {
+    if (*ip == '+') {
+        printf("%s\tE' -> + T E'\n", ip);
+        ip++;
+        if (T()) {
+            if (Edash()) {
+                return 1;
+            } else
+                return 0;
+        } else
+            return 0;
+    } else {
+        printf("%s\tE' -> ε\n", ip);  // Epsilon production
+        return 1;
+    }
+}
+
+int T() {
+    printf("%s\tT -> F T'\n", ip);
+    if (F()) {
+        if (Tdash()) {
+            return 1;
+        } else
+            return 0;
+    } else
+        return 0;
+}
+
+int Tdash() {
+    if (*ip == '*') {
+        printf("%s\tT' -> * F T'\n", ip);
+        ip++;
+        if (F()) {
+            if (Tdash()) {
+                return 1;
+            } else
+                return 0;
+        } else
+            return 0;
+    } else {
+        printf("%s\tT' -> ε\n", ip);  // Epsilon production
+        return 1;
+    }
+}
+
+int F() {
+    if (*ip == '(') {
+        printf("%s\tF -> ( E )\n", ip);
+        ip++;
+        if (E()) {
+            if (*ip == ')') {
+                ip++;
+                return 1;
+            } else
+                return 0;
+        } else
+            return 0;
+    } else if (*ip == 'i') {
+        printf("%s\tF -> id\n", ip);
+        ip++;
+        return 1;
+    } else
+        return 0;
+}
+OUTPUT:
+Enter the string: i+i*i
+
+
+Input	Action
+--------------------------------
+i+i*i	E -> T E'
+i+i*i	T -> F T'
+i+i*i	F -> id
++i*i	T' -> ε
++i*i	E' -> + T E'
+i*i	T -> F T'
+i*i	F -> id
+*i	T' -> * F T'
+i	F -> id
+	T' -> ε
+	E' -> ε
+
+--------------------------------
+String is successfully parsed
+
+EXE 13
+
+#include<stdio.h> 
+#include<ctype.h> 
+void FIRST(char[],char ); 
+void addToResultSet(char[],char); 
+int numOfProductions; 
+char productionSet[10][10]; 
+main() 
+{ 
+int i; 
+char choice; 
+char c; 
+char result[20]; 
+printf("How many number of productions ? :"); 
+scanf(" %d",&numOfProductions); 
+for(i=0;i<numOfProductions;i++)//read production string eg: E=E+T 
+{ 
+printf("Enter productions Number %d : ",i+1); 
+scanf(" %s",productionSet[i]); 
+} 
+do 
+{ 
+printf("\n Find the FIRST of :"); 
+scanf(" %c",&c); 
+FIRST(result,c); //Compute FIRST; Get Answer in 'result' array 
+printf("\n FIRST(%c)= { ",c); 
+for(i=0;result[i]!='\0';i++) 
+printf(" %c ",result[i]); //Display result 
+printf("}\n"); 
+printf("press 'y' to continue : "); 
+scanf(" %c",&choice); 
+} 
+while(choice=='y'||choice =='Y'); 
+} 
+void FIRST(char* Result,char c) 
+{ 
+int i,j,k; 
+char subResult[20]; 
+int foundEpsilon; 
+subResult[0]='\0'; 
+Result[0]='\0'; 
+if(!(isupper(c))) 
+{ 
+addToResultSet(Result,c); 
+return ; 
+} 
+for(i=0;i<numOfProductions;i++) 
+{ 
+if(productionSet[i][0]==c) 
+{ 
+if(productionSet[i][2]=='$') addToResultSet(Result,'$'); 
+else 
+{ 
+j=2; 
+while(productionSet[i][j]!='\0') 
+{ 
+foundEpsilon=0; 
+FIRST(subResult,productionSet[i][j]); 
+for(k=0;subResult[k]!='\0';k++) 
+addToResultSet(Result,subResult[k]); 
+for(k=0;subResult[k]!='\0';k++) 
+if(subResult[k]=='$') 
+{ 
+foundEpsilon=1; 
+break; 
+} 
+if(!foundEpsilon) 
+break; 
+j++; 
+} 
+} 
+} 
+} 
+return ; 
+} 
+void addToResultSet(char Result[],char val) 
+{ 
+int k; 
+for(k=0 ;Result[k]!='\0';k++) 
+if(Result[k]==val) 
+return; 
+Result[k]=val; 
+Result[k+1]='\0'; 
+}
+OUTPUT:
+How many number of productions ? :4
+Enter productions Number 1 : E=TR
+Enter productions Number 2 : R=+TR
+Enter productions Number 3 : T=a
+Enter productions Number 4 : Y=s
+
+ Find the FIRST of :E
+
+ FIRST(E)= {  a }
+press 'y' to continue : Y
+
+ Find the FIRST of :R
+
+ FIRST(R)= {  + }
+press 'y' to continue : Y
+
+ Find the FIRST of :T
+
+ FIRST(T)= {  a }
+press 'y' to continue : 
+Y
+
+ Find the FIRST of :Y
+
+ FIRST(Y)= {  s }
+press 'y' to continue : Y
+
+BB
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>  // For islower function
+
+int n, m = 0, p, i = 0, j = 0;
+char a[10][10], followResult[10];
+
+void follow(char c);
+void first(char c);
+void addToResult(char c);
+
+int main() {
+    int i;
+    int choice;
+    char c, ch;
+    
+    printf("Enter the number of productions: ");
+    scanf("%d", &n);
+    printf("Enter %d productions\nProduction with multiple terms should be given as separate productions:\n", n);
+    for (i = 0; i < n; i++) {
+        scanf("%s", a[i]);
+    }
+
+    do {
+        m = 0;  // Reset the index for followResult
+        printf("Find FOLLOW of --> ");
+        scanf(" %c", &c);
+        follow(c);
+        
+        printf("FOLLOW(%c) = { ", c);
+        for (i = 0; i < m; i++)
+            printf("%c ", followResult[i]);
+        printf("}\n");
+
+        printf("Do you want to continue (Press 1 to continue)? ");
+        scanf("%d", &choice);
+        
+    } while (choice == 1);
+
+    return 0;
+}
+
+// Function to compute FOLLOW of a non-terminal
+void follow(char c) {
+    if (a[0][0] == c) 
+        addToResult('$');  // '$' denotes the end of input marker
+    
+    for (i = 0; i < n; i++) {
+        for (j = 2; j < strlen(a[i]); j++) {
+            if (a[i][j] == c) {
+                if (a[i][j + 1] != '\0')  // If the symbol is followed by another character
+                    first(a[i][j + 1]);
+                
+                if (a[i][j + 1] == '\0' && c != a[i][0])  // If at end, recur for LHS
+                    follow(a[i][0]);
+            }
+        }
+    }
+}
+
+// Function to compute FIRST of the following character in a production
+void first(char c) {
+    // If `c` is a terminal, add it to the result
+    if (!isupper(c)) {
+        addToResult(c);
+        return;
+    }
+
+    // Otherwise, `c` is a non-terminal. Check productions for `c`
+    for (int k = 0; k < n; k++) {
+        if (a[k][0] == c) {
+            if (a[k][2] == '$')  // If epsilon, take FOLLOW of LHS
+                follow(a[i][0]);
+            else if (islower(a[k][2]))  // If it’s a terminal, add it to result
+                addToResult(a[k][2]);
+            else  // Otherwise, recur for the non-terminal
+                first(a[k][2]);
+        }
+    }
+}
+
+// Utility function to add a character to `followResult` if not already present
+void addToResult(char c) {
+    for (int i = 0; i < m; i++) {
+        if (followResult[i] == c)
+            return;  // Return if character is already in the result
+    }
+    followResult[m++] = c;  // Add character and increment index
+}
+OUTPUT:
+Enter the number of productions: 6
+Enter 6 productions
+Production with multiple terms should be given as separate productions:
+E=TR
+R=+TR
+T=FY
+Y=*FY
+F=(E)
+F=a
+Find FOLLOW of --> E
+FOLLOW(E) = { $ ) }
+Do you want to continue (Press 1 to continue)? 1
+Find FOLLOW of --> R
+FOLLOW(R) = { $ ) }
+Do you want to continue (Press 1 to continue)? 1
+Find FOLLOW of --> T
+FOLLOW(T) = { + }
+Do you want to continue (Press 1 to continue)? 1
+Find FOLLOW of --> Y
+FOLLOW(Y) = { + }
+Do you want to continue (Press 1 to continue)? 1
+Find FOLLOW of --> F
+FOLLOW(F) = { * }
+Do you want to continue (Press 1 to continue)? 1
+Find FOLLOW of --> F
+FOLLOW(F) = { * }
+Do you want to continue (Press 1 to continue)? 
+
+
+EXE 14
+
+#include <stdio.h>  
+#include <string.h>  
+char prol[7][10] = {"S", "A", "A", "B", "B", "C", "C"};  
+char pror[7][10] = {"A", "Bb", "Cd", "aB", "@", "Cc", "@"};  
+char prod[7][10] = {"S->A", "A->Bb", "A->Cd", "B->aB", "B->@", "C->Cc", "C->@"};  
+char first[7][10] = {"abcd", "ab", "cd", "a@", "@", "c@", "@"};  
+char follow[7][10] = {"$", "$", "$", "a$", "b$", "c$", "d$"};  
+char table[5][6][10];  
+int numr(char c) {  
+switch (c) {  
+case 'S': return 0;  
+case 'A': return 1;  
+case 'B': return 2;  
+case 'C': return 3;  
+case 'a': return 0;  
+case 'b': return 1;  
+case 'c': return 2;  
+case 'd': return 3;  
+case '$': return 4;  
+}  
+return 2;  
+}  
+int main() {  
+int i, j, k;  
+for (i = 0; i < 5; i++)  
+for (j = 0; j < 6; j++)  
+strcpy(table[i][j], " ");  
+printf("\nThe following is the predictive parsing table for the following grammar:\n");  
+for (i = 0; i < 7; i++)  
+printf("%s\n", prod[i]);  
+printf("\nPredictive parsing table is\n");  
+for (i = 0; i < 7; i++) {  
+k = strlen(first[i]);  
+for (j = 0; j < k; j++)  
+if (first[i][j] != '@')  
+strcpy(table[numr(prol[i][0]) + 1][numr(first[i][j]) + 1], prod[i]);  
+}  
+for (i = 0; i < 7; i++) {  
+if (strlen(pror[i]) == 1) {  
+if (pror[i][0] == '@') {  
+k = strlen(follow[i]);  
+for (j = 0; j < k; j++)  
+strcpy(table[numr(prol[i][0]) + 1][numr(follow[i][j]) + 1], prod[i]);  
+}  
+}  
+}  
+strcpy(table[0][0], " ");  
+strcpy(table[0][1], "a");  
+strcpy(table[0][2], "b");  
+strcpy(table[0][3], "c");  
+strcpy(table[0][4], "d");  
+strcpy(table[0][5], "$");  
+strcpy(table[1][0], "S");  
+strcpy(table[2][0], "A");  
+strcpy(table[3][0], "B");  
+strcpy(table[4][0], "C");  
+printf("\n--------------------------------------------------------\n");  
+for (i = 0; i < 5; i++)  
+for (j = 0; j < 6; j++) {  
+printf("%-10s", table[i][j]);  
+if (j == 5)  
+printf("\n--------------------------------------------------------\n");  
+}  
+getchar();  
+return 0;  
+}  
+OUTPUT:
+The following is the predictive parsing table for the following grammar:
+S->A
+A->Bb
+A->Cd
+B->aB
+B->@
+C->Cc
+C->@
+
+Predictive parsing table is
+
+--------------------------------------------------------
+          a         b         c         d         $         
+--------------------------------------------------------
+S         S->A      S->A      S->A      S->A                
+--------------------------------------------------------
+A         A->Bb     A->Bb     A->Cd     A->Cd               
+--------------------------------------------------------
+B         B->aB     B->@                          B->@      
+--------------------------------------------------------
+C                             C->Cc     C->@      C->@      
+--------------------------------------------------------
+
